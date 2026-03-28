@@ -1,0 +1,17 @@
+{
+	"name": "SQL script for Parquet External Table",
+	"properties": {
+		"content": {
+			"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'synapse-container_aniket001_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [synapse-container_aniket001_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://synapse-container@aniket001.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE dbo.sample_prq (\n\t[StudentID] nvarchar(4000),\n\t[Name] nvarchar(4000),\n\t[Age] bigint,\n\t[EducationLevel] nvarchar(4000),\n\t[EnrollmentDate] nvarchar(4000),\n\t[GraduationDate] nvarchar(4000),\n\t[Institution] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'sample3.parquet',\n\tDATA_SOURCE = [synapse-container_aniket001_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.sample_prq\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Aniket_DB",
+				"poolName": "Built-in"
+			},
+			"resultLimit": -1
+		},
+		"type": "SqlQuery"
+	}
+}

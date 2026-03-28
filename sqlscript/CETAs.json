@@ -1,0 +1,17 @@
+{
+	"name": "CETAs",
+	"properties": {
+		"content": {
+			"query": "--CETAs ( Create EXTERNAL TABLE as Select)\n\nSELECT TOP(10) *FROM dbo.GiantPeople;\n\nCREATE EXTERNAL TABLE dbo.GiantPeopleAsiaParquet\nwith(\n    LOCATION = 'Prosseced/AsiaParquet',\n    DATA_SOURCE =[synapse-container_aniket001_dfs_core_windows_net],\n    FILE_FORMAT =[SynapseParquetFormat]\n) \nAS \nSELECT * FROM dbo.GiantPeople WHERE continent ='Asia';\n\nSELECT * FROM dbo.GiantPeopleAsiaParquet;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Aniket_DB",
+				"poolName": "Built-in"
+			},
+			"resultLimit": -1
+		},
+		"type": "SqlQuery"
+	}
+}

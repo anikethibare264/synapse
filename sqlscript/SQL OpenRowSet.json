@@ -1,0 +1,17 @@
+{
+	"name": "SQL OpenRowSet",
+	"properties": {
+		"content": {
+			"query": "--OpenRowSet\n\nSELECT\n* \nFROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/tallest_people_in_the_world.csv',\n    FORMAT='CSV',\n    HEADER_ROW=TRUE,\n    PARSER_VERSION='2.0'\n) AS OPS;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Aniket_DB",
+				"poolName": "Built-in"
+			},
+			"resultLimit": -1
+		},
+		"type": "SqlQuery"
+	}
+}
