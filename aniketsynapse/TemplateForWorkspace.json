@@ -94,6 +94,46 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/CETAs')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "--CETAs ( Create EXTERNAL TABLE as Select)\n\nSELECT TOP(10) *FROM dbo.GiantPeople;\n\nCREATE EXTERNAL TABLE dbo.GiantPeopleAsiaParquet\nwith(\n    LOCATION = 'Prosseced/AsiaParquet',\n    DATA_SOURCE =[synapse-container_aniket001_dfs_core_windows_net],\n    FILE_FORMAT =[SynapseParquetFormat]\n) \nAS \nSELECT * FROM dbo.GiantPeople WHERE continent ='Asia';\n\nSELECT * FROM dbo.GiantPeopleAsiaParquet;\n\nDROP DATABASE DB_Aniket;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "Aniket_DB",
+						"poolName": "Built-in"
+					},
+					"resultLimit": -1
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL OpenRowSet')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "--OpenRowSet\n\nSELECT\n* \nFROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/tallest_people_in_the_world.csv',\n    FORMAT='CSV',\n    HEADER_ROW=TRUE,\n    PARSER_VERSION='2.0'\n) AS OPS;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "Aniket_DB",
+						"poolName": "Built-in"
+					},
+					"resultLimit": -1
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/SQL script for External Table')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -134,37 +174,17 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL OpenRowSet')]",
+			"name": "[concat(parameters('workspaceName'), '/SQL OpenRowSet Extended')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "--OpenRowSet\n\nSELECT\n* \nFROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/tallest_people_in_the_world.csv',\n    FORMAT='CSV',\n    HEADER_ROW=TRUE,\n    PARSER_VERSION='2.0'\n) AS OPS;",
+					"query": "\nSELECT \nCOUNTRY,\nROUND(SUM(REVENUE_USD), 2)AS TOTALE_REVENUE\nFROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/apple_global_sales_dataset.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS [RESULT]\nGROUP BY COUNTRY\nORDER BY COUNTRY ASC;\n\nCREATE VIEW APPLE_REVENUE AS\nSELECT COUNTRY,ROUND(SUM(REVENUE_USD), 2)AS TOTALE_REVENUE\nFROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/apple_global_sales_dataset.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS [RESULT]\nGROUP BY COUNTRY;\n\nSELECT * FROM APPLE_REVENUE;\n\nCREATE VIEW APPLE_REVENUE_TOP_RANKED AS\nWITH TOP_RANKED AS (\nSELECT \nCOUNTRY,\nROUND(SUM(REVENUE_USD), 2)AS TOTALE_REVENUE,\nROW_NUMBER() OVER ( ORDER BY SUM(REVENUE_USD) DESC) AS RN \nFROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/apple_global_sales_dataset.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS [RESULT]\nGROUP BY COUNTRY\n)\nSELECT\nCOUNTRY,\nTOTALE_REVENUE\nFROM TOP_RANKED\nWHERE RN < 11;\n\nSELECT * FROM APPLE_REVENUE_TOP_RANKED;\n\n\n\nCREATE VIEW PLAYER_CLUBS AS\nSELECT\n PLAYER.PLAYER_ID,\n PLAYER.[NAME] AS PLAYER_NAME,\n PLAYER.COUNTRY_OF_BIRTH,\n PLAYER.COUNTRY_OF_CITIZENSHIP,\n CLUBS.*\n FROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/players.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS PLAYER\nINNER JOIN OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/clubs.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS CLUBS\nON PLAYER.current_club_id = CLUBS.club_id;\n\n\nselect * from PLAYER_CLUBS;\n\n\n\n\n\n",
 					"metadata": {
 						"language": "sql"
 					},
 					"currentConnection": {
 						"databaseName": "Aniket_DB",
-						"poolName": "Built-in"
-					},
-					"resultLimit": -1
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/CETAs')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "--CETAs ( Create EXTERNAL TABLE as Select)\n\nSELECT TOP(10) *FROM dbo.GiantPeople;\n\nCREATE EXTERNAL TABLE dbo.GiantPeopleAsiaParquet\nwith(\n    LOCATION = 'Prosseced/AsiaParquet',\n    DATA_SOURCE =[synapse-container_aniket001_dfs_core_windows_net],\n    FILE_FORMAT =[SynapseParquetFormat]\n) \nAS \nSELECT * FROM dbo.GiantPeople WHERE continent ='Asia';\n\nSELECT * FROM dbo.GiantPeopleAsiaParquet;\n\nDROP DATABASE DB_Aniket;",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "master",
 						"poolName": "Built-in"
 					},
 					"resultLimit": -1
