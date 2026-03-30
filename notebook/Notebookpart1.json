@@ -1,0 +1,96 @@
+{
+	"name": "Notebookpart1",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "AniketComputer",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "a69b6c5e-0d40-4907-b9e4-7e37f157776d"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/6f530b2d-23cc-401e-be56-b5e7c38411b4/resourceGroups/rg_Aniket/providers/Microsoft.Synapse/workspaces/aniketsynapse/bigDataPools/AniketComputer",
+				"name": "AniketComputer",
+				"type": "Spark",
+				"endpoint": "https://aniketsynapse.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/AniketComputer",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.5",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql import functions as f"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"collapsed": false
+				},
+				"source": [
+					"data='abfss://synapse-container@aniket001.dfs.core.windows.net/players.csv'\n",
+					"\n",
+					"df=(\n",
+					"    spark.read.format(\"csv\")\n",
+					".option(\"header\",\"true\")\n",
+					".option(\"inferSchema\",\"true\")\n",
+					".load(data))\n",
+					"display(df)\n",
+					""
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"collapsed": false
+				},
+				"source": [
+					"position = df.filter(f.col(\"position\") == \"Attack\")\n",
+					"display(position)"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"df.write.format(\"parquet\").save(\"/notebook/data\")"
+				],
+				"execution_count": 10
+			}
+		]
+	}
+}
