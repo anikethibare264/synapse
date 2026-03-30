@@ -114,6 +114,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/SQL OpenRowSet Extended')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "\nSELECT \nCOUNTRY,\nROUND(SUM(REVENUE_USD), 2)AS TOTALE_REVENUE\nFROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/apple_global_sales_dataset.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS [RESULT]\nGROUP BY COUNTRY\nORDER BY COUNTRY ASC;\n\nCREATE VIEW APPLE_REVENUE AS\nSELECT COUNTRY,ROUND(SUM(REVENUE_USD), 2)AS TOTALE_REVENUE\nFROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/apple_global_sales_dataset.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS [RESULT]\nGROUP BY COUNTRY;\n\nSELECT * FROM APPLE_REVENUE;\n\nCREATE VIEW APPLE_REVENUE_TOP_RANKED AS\nWITH TOP_RANKED AS (\nSELECT \nCOUNTRY,\nROUND(SUM(REVENUE_USD), 2)AS TOTALE_REVENUE,\nROW_NUMBER() OVER ( ORDER BY SUM(REVENUE_USD) DESC) AS RN \nFROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/apple_global_sales_dataset.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS [RESULT]\nGROUP BY COUNTRY\n)\nSELECT\nCOUNTRY,\nTOTALE_REVENUE\nFROM TOP_RANKED\nWHERE RN < 11;\n\nSELECT * FROM APPLE_REVENUE_TOP_RANKED;\n\n\n\nCREATE VIEW PLAYER_CLUBS AS\nSELECT\n PLAYER.PLAYER_ID,\n PLAYER.[NAME] AS PLAYER_NAME,\n PLAYER.COUNTRY_OF_BIRTH,\n PLAYER.COUNTRY_OF_CITIZENSHIP,\n CLUBS.*\n FROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/players.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS PLAYER\nINNER JOIN OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/clubs.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS CLUBS\nON PLAYER.current_club_id = CLUBS.club_id;\n\n\nselect * from PLAYER_CLUBS;\n\n\n\n\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "Aniket_DB",
+						"poolName": "Built-in"
+					},
+					"resultLimit": -1
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/SQL OpenRowSet')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -174,22 +194,116 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL OpenRowSet Extended')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"name": "[concat(parameters('workspaceName'), '/AniketComputer')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"content": {
-					"query": "\nSELECT \nCOUNTRY,\nROUND(SUM(REVENUE_USD), 2)AS TOTALE_REVENUE\nFROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/apple_global_sales_dataset.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS [RESULT]\nGROUP BY COUNTRY\nORDER BY COUNTRY ASC;\n\nCREATE VIEW APPLE_REVENUE AS\nSELECT COUNTRY,ROUND(SUM(REVENUE_USD), 2)AS TOTALE_REVENUE\nFROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/apple_global_sales_dataset.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS [RESULT]\nGROUP BY COUNTRY;\n\nSELECT * FROM APPLE_REVENUE;\n\nCREATE VIEW APPLE_REVENUE_TOP_RANKED AS\nWITH TOP_RANKED AS (\nSELECT \nCOUNTRY,\nROUND(SUM(REVENUE_USD), 2)AS TOTALE_REVENUE,\nROW_NUMBER() OVER ( ORDER BY SUM(REVENUE_USD) DESC) AS RN \nFROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/apple_global_sales_dataset.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS [RESULT]\nGROUP BY COUNTRY\n)\nSELECT\nCOUNTRY,\nTOTALE_REVENUE\nFROM TOP_RANKED\nWHERE RN < 11;\n\nSELECT * FROM APPLE_REVENUE_TOP_RANKED;\n\n\n\nCREATE VIEW PLAYER_CLUBS AS\nSELECT\n PLAYER.PLAYER_ID,\n PLAYER.[NAME] AS PLAYER_NAME,\n PLAYER.COUNTRY_OF_BIRTH,\n PLAYER.COUNTRY_OF_CITIZENSHIP,\n CLUBS.*\n FROM OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/players.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS PLAYER\nINNER JOIN OPENROWSET(\n    BULK'https://aniket001.dfs.core.windows.net/synapse-container/clubs.csv',\n    FORMAT = 'CSV',\n    HEADER_ROW = TRUE,\n    PARSER_VERSION = '2.0'\n)AS CLUBS\nON PLAYER.current_club_id = CLUBS.club_id;\n\n\nselect * from PLAYER_CLUBS;\n\n\n\n\n\n",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "Aniket_DB",
-						"poolName": "Built-in"
-					},
-					"resultLimit": -1
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Notebookpart1')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "AniketComputer",
+					"type": "BigDataPoolReference"
 				},
-				"type": "SqlQuery"
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "e8892b9a-88ed-41f9-b7aa-3732b78a989a"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/6f530b2d-23cc-401e-be56-b5e7c38411b4/resourceGroups/rg_Aniket/providers/Microsoft.Synapse/workspaces/aniketsynapse/bigDataPools/AniketComputer",
+						"name": "AniketComputer",
+						"type": "Spark",
+						"endpoint": "https://aniketsynapse.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/AniketComputer",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.5",
+						"nodeCount": 10,
+						"cores": 4,
+						"memory": 28,
+						"automaticScaleJobs": false
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							"from pyspark.sql import functions as f"
+						],
+						"outputs": [],
+						"execution_count": 3
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"collapsed": false
+						},
+						"source": [
+							"data='abfss://synapse-container@aniket001.dfs.core.windows.net/players.csv'\n",
+							"\n",
+							"df=(\n",
+							"    spark.read.format(\"csv\")\n",
+							".option(\"header\",\"true\")\n",
+							".option(\"inferSchema\",\"true\")\n",
+							".load(data))\n",
+							"display(df)\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 2
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"collapsed": false
+						},
+						"source": [
+							"position = df.filter(f.col(\"position\") == \"Attack\")\n",
+							"display(position)"
+						],
+						"outputs": [],
+						"execution_count": 9
+					},
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							"df.write.format(\"parquet\").save(\"/notebook/data\")"
+						],
+						"outputs": [],
+						"execution_count": 10
+					}
+				]
 			},
 			"dependsOn": []
 		}
