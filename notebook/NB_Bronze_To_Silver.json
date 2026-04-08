@@ -1,0 +1,215 @@
+{
+	"name": "NB_Bronze_To_Silver",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "AniketComputer",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "898d7727-fd08-4fa5-9881-c97032dc4032"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/6f530b2d-23cc-401e-be56-b5e7c38411b4/resourceGroups/rg_Aniket/providers/Microsoft.Synapse/workspaces/aniketsynapse/bigDataPools/AniketComputer",
+				"name": "AniketComputer",
+				"type": "Spark",
+				"endpoint": "https://aniketsynapse.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/AniketComputer",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.5",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"fact_df = spark.read.parquet(\n",
+					"    \"abfss://synapse-container@aniket001.dfs.core.windows.net/bronze/retailmart/factinternetsales/*/*/*/\"\n",
+					")"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"customer_df = spark.read.parquet(\n",
+					"    \"abfss://synapse-container@aniket001.dfs.core.windows.net/bronze/retailmart/dimcustomer/*/*/*/\"\n",
+					")"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"product_df = spark.read.parquet(\n",
+					"    \"abfss://synapse-container@aniket001.dfs.core.windows.net/bronze/retailmart/dimproduct/*/*/*/\"\n",
+					")\n",
+					""
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"fact_df = spark.read.parquet(\n",
+					"    \"abfss://synapse-container@aniket001.dfs.core.windows.net/bronze/retailmart/factinternetsales/*/*/*/\"\n",
+					")\n",
+					"\n",
+					"fact_df.show(5)"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"fact_df.show(5)\n",
+					"customer_df.show(5)\n",
+					"product_df.show(5)"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"fact_df = fact_df.dropna(\n",
+					"    subset=[\"CustomerKey\", \"ProductKey\", \"SalesAmount\"]\n",
+					")"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"fact_df = fact_df.dropDuplicates()"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"enriched_df = fact_df.join(\n",
+					"    customer_df,\n",
+					"    \"CustomerKey\",\n",
+					"    \"left\"\n",
+					").join(\n",
+					"    product_df,\n",
+					"    \"ProductKey\",\n",
+					"    \"left\"\n",
+					")"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql.functions import col\n",
+					"\n",
+					"enriched_df = enriched_df.withColumn(\n",
+					"    \"Profit\",\n",
+					"    col(\"SalesAmount\") - col(\"TotalProductCost\")\n",
+					")"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql.functions import col\n",
+					"\n",
+					"final_df = enriched_df.select(\n",
+					"    col(\"CustomerKey\").cast(\"int\"),\n",
+					"    col(\"ProductKey\").cast(\"int\"),\n",
+					"    col(\"SalesAmount\").cast(\"double\"),\n",
+					"    col(\"TotalProductCost\").cast(\"double\"),\n",
+					"    col(\"Profit\").cast(\"double\")\n",
+					")"
+				],
+				"execution_count": 16
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"final_df.write.mode(\"overwrite\").parquet(\n",
+					"    \"abfss://synapse-container@aniket001.dfs.core.windows.net/silver/retailmart/sales_enriched/\"\n",
+					")"
+				],
+				"execution_count": 17
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"final_df.show(5)"
+				],
+				"execution_count": 18
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"final_df.count()"
+				],
+				"execution_count": 19
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"final_df.write.mode(\"overwrite\").parquet(\n",
+					"    \"abfss://synapse-container@aniket001.dfs.core.windows.net/silver/retailmart/sales_enriched/\"\n",
+					")"
+				],
+				"execution_count": 13
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"print(\"Before Clean:\", fact_df.count())\n",
+					"print(\"After Clean:\", final_df.count())"
+				],
+				"execution_count": 20
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"final_df.write.mode(\"overwrite\").parquet(\n",
+					"    \"abfss://synapse-container@aniket001.dfs.core.windows.net/silver/retailmart/sales_enriched/\"\n",
+					")"
+				],
+				"execution_count": 21
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					""
+				],
+				"execution_count": null
+			}
+		]
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"name": "SQL Fact Sales",
+	"properties": {
+		"content": {
+			"query": "CREATE TABLE fact_sales (\n    CustomerKey INT,\n    ProductKey INT,\n    SalesAmount FLOAT,\n    TotalProductCost FLOAT,\n    Profit FLOAT\n)\nWITH (\n    DISTRIBUTION = HASH(CustomerKey),\n    CLUSTERED COLUMNSTORE INDEX\n);\n\n\n\n\nDROP TABLE fact_sales;\n\nCREATE TABLE fact_sales (\n    CustomerKey INT,\n    ProductKey INT,\n    SalesAmount FLOAT,\n    TotalProductCost FLOAT,\n    Profit FLOAT\n)\nWITH (\n    DISTRIBUTION = HASH(CustomerKey),\n    CLUSTERED COLUMNSTORE INDEX\n);\n\nCOPY INTO fact_sales\nFROM 'https://aniket001.dfs.core.windows.net/synapse-container/silver/retailmart/sales_enriched/'\nWITH (\n    FILE_TYPE = 'PARQUET'\n);\n\n\nSELECT TOP 10 * \nFROM fact_sales;\n\nSELECT COUNT(*) AS TotalRows\nFROM fact_sales;\n\nCREATE STATISTICS stat_sales_CustomerKey \nON fact_sales(CustomerKey);\n\nCREATE STATISTICS stat_sales_ProductKey \nON fact_sales(ProductKey);\n\nSELECT TOP 10\n    CustomerKey,\n    SUM(SalesAmount) AS TotalRevenue,\n    SUM(Profit) AS TotalProfit\nFROM fact_sales\nGROUP BY CustomerKey\nORDER BY TotalRevenue DESC;\n\nSELECT *\nFROM OPENROWSET(\n    BULK 'https://aniket001.dfs.core.windows.net/synapse-container/silver/retailmart/sales_enriched/',\n    FORMAT = 'PARQUET'\n) AS rows;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Aniket_DB",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
