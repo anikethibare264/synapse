@@ -1,0 +1,84 @@
+{
+	"name": "DS_SQL_Sink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@concat(\n'factinternetsales_',\nformatDateTime(utcNow(),'yyyyMMdd'),\n'.parquet'\n)",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@concat(\n'bronze/retailmart/factinternetsales/',\nformatDateTime(utcNow(),'yyyy'),\n'/',\nformatDateTime(utcNow(),'MM'),\n'/',\nformatDateTime(utcNow(),'dd')\n)",
+					"type": "Expression"
+				},
+				"fileSystem": "synapse-container"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "id",
+				"type": "INT_64"
+			},
+			{
+				"name": "name",
+				"type": "UTF8"
+			},
+			{
+				"name": "gender",
+				"type": "UTF8"
+			},
+			{
+				"name": "country",
+				"type": "UTF8"
+			},
+			{
+				"name": "continent",
+				"type": "UTF8"
+			},
+			{
+				"name": "height_cm",
+				"type": "INT_64"
+			},
+			{
+				"name": "height_ft_in",
+				"type": "UTF8"
+			},
+			{
+				"name": "weight_kg",
+				"type": "INT_64"
+			},
+			{
+				"name": "birth_year",
+				"type": "INT_64"
+			},
+			{
+				"name": "death_year",
+				"type": "INT_64"
+			},
+			{
+				"name": "lifespan",
+				"type": "INT_64"
+			},
+			{
+				"name": "occupation",
+				"type": "UTF8"
+			},
+			{
+				"name": "medical_condition",
+				"type": "UTF8"
+			},
+			{
+				"name": "is_alive",
+				"type": "INT_64"
+			}
+		]
+	}
+}
